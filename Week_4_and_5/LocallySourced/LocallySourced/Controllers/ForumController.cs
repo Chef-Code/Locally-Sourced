@@ -15,31 +15,21 @@ namespace LocallySourced.Controllers
         private LocallySourcedDB db = new LocallySourcedDB();
 
         // GET: Forum
-        public ActionResult Index()
+        public ActionResult Index(int? ids)
         {
-           /* var posts = new List<ForumViewModel>();
-            var messages = db.Messages.Include(m => m.Member).Include(m => m.Topic);
+            var messageVMs = new List<ForumViewModel>();
+            var posts = db.Messages.Include(m => m.Member).Include(m => m.Topic);
 
-            foreach (Message m in messages)
-            {
-                var postVM = new ForumViewModel();
-                postVM.Body = m.Body;
-                postVM.Category = m.Topic.Category;
-                postVM.Date = m.Date;
-                postVM.MessageID = m.MessageID;
-                postVM.Subject = m.Subject;
-                posts.Add(postVM);
-            }
+            messageVMs = GetForumVMs(posts);
 
-            if(GetForumViewModels(0).Count == 0)
+            if (GetForumViewModels(0).Count == 0)
             {
-                return View(posts);
+                return View(messageVMs);
             }
             else
-            {*/
-                 return View(GetForumViewModels(0));
-            
-           
+            {
+                return View(GetForumViewModels(ids));
+            }           
         }
 
         // GET: Forum/Details/5
@@ -66,8 +56,6 @@ namespace LocallySourced.Controllers
         }
 
         // POST: Forum/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "MessageID,MemberID,TopicID,Subject,Body,Date")] Message message)
@@ -102,8 +90,6 @@ namespace LocallySourced.Controllers
         }
 
         // POST: Forum/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "MessageID,MemberID,TopicID,Subject,Body,Date")] Message message)
@@ -155,12 +141,35 @@ namespace LocallySourced.Controllers
         [HttpPost]
         public ActionResult Search(string searchTerm)
         {
-            List<ForumViewModel> forumVMs = new List<ForumViewModel>();
-            var posts = (from p in db.Messages
-                         where p.Subject.Contains(searchTerm)
-                         select p).ToList();
+            var forumVMs = new List<ForumViewModel>();
 
-            foreach(var p in posts)
+            var posts = db.Messages.Include(m => m.Members).Include(m => m.Topics);
+                             
+            forumVMs = GetForumVMs(posts.Where(p => p.Subject.Contains(searchTerm)));
+      
+            if(forumVMs.Count == 1)
+            {
+                return View("Details", forumVMs[0]);
+            }
+            else
+            {
+                return View("Index", forumVMs);
+            }         
+        }
+        //Terminates connection string to the Database
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        private List<ForumViewModel> GetForumVMs(IQueryable<Message> posts)
+        {
+            var forumVMs = new List<ForumViewModel>();
+            
+            foreach (var p in posts)
             {
                 var members = (from m in db.Members
                                where m.MemberID == p.MemberID
@@ -171,62 +180,46 @@ namespace LocallySourced.Controllers
                               select t).FirstOrDefault();
 
                 forumVMs.Add(new ForumViewModel
-                    {
-                        MessageID = p.MessageID,
-                        Body = p.Body,
-                        Category = topics.Category,
-                        Date = p.Date,
-                        Subject = p.Subject,
-                        UserName = members.UserName
-                    });
+                {
+                    MessageID = p.MessageID,
+                    Body = p.Body,
+                    Category = topics.Category,
+                    Date = p.Date,
+                    Subject = p.Subject,
+                    UserName = members.UserName
+                });
             }
-
-            if(forumVMs.Count == 1)
-            {
-                return View("Details", forumVMs[0]);
-            }
-            else
-            {
-                return View("Index", forumVMs);
-            }         
+            return forumVMs;
         }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-        private List<ForumViewModel> GetForumViewModels(int? forumIDs)
+        private List<ForumViewModel> GetForumViewModels(int? ids)
         {
             var forumVMs = new List<ForumViewModel>();
             var posts = db.Messages.Include(m => m.Members).Include(m => m.Topics);
 
             foreach(Message p in posts)
             {
-                var forumVM = new ForumViewModel();
-                forumVM.MessageID = p.MessageID;
-                forumVM.Subject = p.Subject;
-                forumVM.Body = p.Body;
-                forumVM.Date = p.Date;
-
-                foreach(Member m in p.Members)
+                if (p.MessageID == ids)
                 {
-                    forumVM.UserName = m.UserName;
+                    var forumVM = new ForumViewModel();
+                    forumVM.MessageID = p.MessageID;
+                    forumVM.Subject = p.Subject;
+                    forumVM.Body = p.Body;
+                    forumVM.Date = p.Date;
 
-                    foreach(Topic t in p.Topics)
-                    {                          
-                            forumVM.Category = t.Category;                          
+                    foreach (Member m in p.Members)
+                    {
+                        forumVM.UserName = m.UserName;
+
+                        foreach (Topic t in p.Topics)
+                        {
+                            forumVM.Category = t.Category;
                             forumVMs.Add(forumVM);
-                                              
+                        }
                     }
                 }
+                
             }
             return forumVMs;
-
-
         }
         private ForumViewModel GetForumViewModel(int? forumID)
         {
