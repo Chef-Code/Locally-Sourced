@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+    @Mvc.RazorTools.BundleManager.Styles.Render()
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1>Locally Sourced</h1>              
+                </div>
+                <div class="col-md-6">
+                    <div class="btn-group">
+                        <a href="~/Home/Index" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-home"></span> Home</a>
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="~/Home/About"> About</a></li>
+                            <li><a href="~/Home/Contact"> Contact</a></li>
+                            <li><a href="~/Home/History"> History</a></li>
+                        </ul>
+                    </div>
+                    <div class="btn-group">
+                        <a href="~/Map" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-map-marker"></span> Find Us!</a>
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="~/Map/Index"> Index</a></li>
+                        </ul>
+                    </div>
+                    <div class="btn-group">
+                        <a href="~/News" class="btn btn-primary" role="button"><span class="fa fa-newspaper-o"></span> The Dish</a>
+                        <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu btn-block" role="menu">
+                            <li><a href="~/News/TodaysNews"> Todays News</a></li>
+                            <li><a href="~/News/Archive"> Old News</a></li>
+                        </ul>
+                    </div>                 
+                </div>
+             </div>
+        </div>
+        <div class="label-success active">
+
+            <div class="col-md-6"></div> <!--Empty Place Holder-->
+
+            <div class="col-md-6">
+                @if (User.Identity.IsAuthenticated)
+                {
+                   @*ar me = (Member)@User.Identity*@
+                    @:Hello @User.Identity.Name @*GetType().TypeInitializer.Invoke(Model);*@
+                    <a href="@Url.Action("logout", "auth")">Log Out</a>
+                }
+                else
+                {
+                    <a href="@Url.Action("login", "auth")">Log In</a>
+                    <a href="@Url.Action("Register", "auth")">Register</a>
+                }
+
+                @ViewBag.ResultMessage
+            </div>
+            </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p><span class="glyphicon glyphicon-copyright-mark"></span> @DateTime.Now.Year - Locally Sourced</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

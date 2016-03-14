@@ -1,0 +1,45 @@
+﻿@model IEnumerable<LocallySourced.Models.Forum>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<div class="table-bordered">
+    <div class="row">
+        @Html.DisplayNameFor(model => model.ForumName)
+    </div>
+
+    @foreach (var item in Model)
+    {
+        <div class="row">
+            <div class="col-lg-12">
+                @Html.DisplayFor(modelItem => item.ForumName)
+
+            </div>
+        </div>
+        <div class="row">
+            @foreach (var i in item.Categories)
+            {
+                <div class="col-lg-4">
+                    @Html.ActionLink(i.Title.ToString(),"Index","Categories", new { id = i.CategoryID})
+                </div>
+                <div class="col-lg-4">@Html.Label(String.Format("{0}"),i.Description)</div>
+            }
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                @Html.ActionLink("Edit", "Edit", new { id = item.ForumID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ForumID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ForumID })
+           </div>
+        </div>
+    }
+</div>
+
+
